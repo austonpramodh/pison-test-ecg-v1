@@ -30,7 +30,7 @@ export default async function handler(
   res: NextApiResponse<APIResponseData>
 ) {
   // simulate a slow response
-  await delay(3000);
+  // await delay(3000);
 
   // get a patient id from the request
   const patientRowIdx = parseInt(req.query.id as string || "0");
