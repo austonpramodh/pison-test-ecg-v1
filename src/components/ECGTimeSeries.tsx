@@ -4,9 +4,10 @@ import { Line } from 'react-chartjs-2';
 import useSWR from 'swr'
 import Box from '@mui/material/Box';
 import Autocomplete from '@mui/material/Autocomplete';
-import { TextField } from '@mui/material';
-import { useMemo, useState } from 'react';
-
+import { TextField, Typography } from '@mui/material';
+import { useMemo, useRef, useState } from 'react';
+import MonitorHeartIcon from '@mui/icons-material/MonitorHeart';
+import OutputIcon from '@mui/icons-material/Output';
 
 const ChartA = () => {
   // Randomly select a time series from the ecg.json file
@@ -15,27 +16,38 @@ const ChartA = () => {
     useSWR<APIResponseData>('/api/ecg_timeseries?' + `id=${patientId}`,
       { refreshInterval: 10000 })
 
+  const patientsLength = useRef(0)
+
+  if (data) {
+    patientsLength.current = data.data.patients
+  }
+
+  // donot recalculate it every time its refreshed unless its changed
   const patientList: { id: number, label: string }[] = useMemo(() => {
     const list: { id: number, label: string }[] = []
-    if (data) {
-      console.log("Calling useMemo")
-      for (let i = 0; i < data.data.patients; i++) {
-        list.push({ id: i, label: `Patient${i}` })
-      }
+    for (let i = 0; i < patientsLength.current; i++) {
+      list.push({ id: i, label: `Patient${i}` })
     }
     return list
-  }, [data?.data.patients])
-
+  }, [patientsLength.current])
 
 
   return (
     <div className="flex flex-col items-center justify-center w-full h-full">
+      {/* <Box>
+        isValidating: {isValidating.toString()} <br />
+        isLoading: {isLoading.toString()} <br />
+      </Box> */}
       {isLoading && <p>Loading...</p>}
       {/* Chartjs Timeseries data */}
       {!error && data && <>
-        <h1 className="text-2xl font-bold">ECG Timeseries</h1>
+        <h1 className="text-2xl font-bold mb-4">ECG Timeseries</h1>
         {/* Drop down for Patient selection */}
-        <Box sx={{ minWidth: 120 }}>
+        <Box sx={{
+          width: "100%", display: "flex", flexDirection: "row",
+          justifyContent: "space-between", alignItems: 'center',
+          mb: 2
+        }}>
           <Autocomplete
             id="patient-select"
             options={patientList}
@@ -48,6 +60,12 @@ const ChartA = () => {
                 setPatientId(`${value.id}`)
             }}
           />
+          <Typography>
+            Result <OutputIcon /> : {data.data.label > 0 ? "Abnormal" : "Normal"}
+          </Typography>
+          <Typography>
+            Heart Rate <MonitorHeartIcon /> : {data.data.heartRate} bpm
+          </Typography>
         </Box>
 
         <Line

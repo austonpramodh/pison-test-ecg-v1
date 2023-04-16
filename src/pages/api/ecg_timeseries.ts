@@ -5,7 +5,8 @@ import loadash from 'lodash'
 import faker from '@faker-js/faker'
 
 type PatientRow = {
-  ["hr"]: number
+  hr: number
+  label: number
   // 140 columns of ECG data with "lead<column number>" as the key
   [key: string]: number
 }
@@ -19,6 +20,7 @@ export type APIResponseData = {
     heartRate: number;
     patients: number;
     patientId: number;
+    label: number;
   }
   message: string
 }
@@ -36,17 +38,20 @@ export default async function handler(
   const patientRowIdx = parseInt(req.query.id as string || "0");
 
   const heartRate = df[patientRowIdx]["hr"]
+  const label = df[patientRowIdx]["label"]
 
   // deep copy the row except for the heart rate column
   const patientRow = loadash.cloneDeep(df[patientRowIdx]) as { [key: string]: number }
   delete patientRow["hr"]
+  delete patientRow["label"]
 
   res.status(200).json({
     data: {
       timeSeries: patientRow,
       heartRate: heartRate,
       patientId: patientRowIdx,
-      patients: df.length
+      patients: df.length,
+      label: label
     },
     message: "Successfully fetched ECG data"
   })

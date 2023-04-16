@@ -2,7 +2,7 @@
 
 import { Roboto } from 'next/font/google'
 import Head from 'next/head'
-import ChartA from '@/components/ChartA'
+import ChartA from '@/components/ECGTimeSeries'
 import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
 
